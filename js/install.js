@@ -7,19 +7,20 @@ var Accelerometer = Class(Emitter, function (supr) {
 	this.init = function() {
 		this.isDebugging = false;
 		supr(this, 'init', arguments);
-		self.queue = [];
+		this.queue = [];
 
-		self.last_motion = null;
-		self.last_orientation = null;
-		self.errors = [];
+		this.last_motion = null;
+		this.last_orientation = null;
+		this.errors = [];
 	};
 	this.motionHandler = function(evt){
-		self.last_motion = evt;
-		self.emit('devicemotion', evt);
+		GLOBAL.accelerometer.emit('devicemotion', evt);
+		GLOBAL.accelerometer.last_motion = evt;
+		
 	};
 	this.orientationHandler = function(evt){
-		self.last_orientation = evt;
-		self.emit('orientation', evt);
+		GLOBAL.accelerometer.last_orientation = evt;
+		GLOBAL.accelerometer.emit('orientation', evt);
 	};
 	this.logit = function(itm, msg){
 		if (this.isDebugging){
@@ -37,16 +38,16 @@ var Accelerometer = Class(Emitter, function (supr) {
 	};
 
 	this.getLastMotion = function(){
-		return self.last_motion;
+		return this.last_motion;
 	};
 	this.getLastOrientation = function(){
-		return self.last_orientation;
+		return this.last_orientation;
 	};
 	this.clear = function(){
-		self.queue = [];
-		self.last_motion = false;
-		self.last_orientation = false;
-		self.errors = [];
+		this.queue = [];
+		this.last_motion = false;
+		this.last_orientation = false;
+		this.errors = [];
 	};
 
 
@@ -57,6 +58,12 @@ GLOBAL.accelerometer = new Accelerometer;
 if (!GLOBAL.NATIVE || device.simulatingMobileNative) {
 	console.log("Installing fake accelerometer");
 } else {
-	NATIVE.events.registerHandler("devicemotion", bind(GLOBAL.accelerometer, 'motionHandler'));
-	NATIVE.events.registerHandler("deviceorientation", bind(GLOBAL.accelerometer, 'orientationHandler'));
+	NATIVE.events.registerHandler("devicemotion", function(evt){
+		//console.log("Received Motion Event!");
+		GLOBAL.accelerometer.motionHandler(evt);
+	});
+	NATIVE.events.registerHandler("deviceorientation", function(evt){
+		//console.log("Orientation Event!");
+		GLOBAL.accelerometer.orientationHandler(evt);
+	});
 } 

@@ -204,6 +204,7 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 				.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
 		setDeviceOrientationEventsEnabled(true);
+		setDeviceMotionEventsEnabled(true);
 	}
 
 	// Register all needed sensor listeners
