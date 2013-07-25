@@ -4,7 +4,7 @@ import com.tealeaf.TeaLeaf;
 import com.tealeaf.plugin.IPlugin;
 import com.tealeaf.event.Event;
 import com.tealeaf.EventQueue;
-
+import com.tealeaf.logger;
 import java.io.*;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -61,7 +61,7 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 	// variable used to ignore the first accelerometer reading when computing
 	// the average
 	private boolean firstFilter = true;
-
+	
 	private class DeviceAcceleration {
 		public float x;
 		public float y;
@@ -146,7 +146,6 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 			}
 			long now = System.currentTimeMillis();
 			String s = obj.toString();
-			Log.d("FUCK",Long.toString(System.currentTimeMillis() - now));
 			return obj.toString();
 			*/
 		}
@@ -203,8 +202,8 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 		magneticSensor = sensorManager
 				.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
-		setDeviceOrientationEventsEnabled(true);
-		setDeviceMotionEventsEnabled(true);
+		// setDeviceOrientationEventsEnabled(true);
+		// setDeviceMotionEventsEnabled(true);
 	}
 
 	// Register all needed sensor listeners
@@ -354,6 +353,49 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 	public void onNewIntent(Intent intent) {
 	
 	}
+	
+	public void onRequest(String jsonData){
+		try {
+		JSONObject jsonObject = new JSONObject(jsonData);
+		String cmd = jsonObject.getString("cmd");
+		RequestCommands currentCommand = RequestCommands.valueOf(cmd.toUpperCase());
+		switch(currentCommand){
+			case ENABLE_MOTION:
+			  setDeviceMotionEventsEnabled(true);
+			  break;
+			case DISABLE_MOTION:
+			  setDeviceMotionEventsEnabled(false);
+			  break;
+			case ENABLE_ORIENTATION:
+				setDeviceOrientationEventsEnabled(true);
+				break;
+			case DISABLE_ORIENTATION:
+				setDeviceOrientationEventsEnabled(false);
+				break;
+			case TOGGLE_MOTION:
+				if (deviceMotionEventsEnabled){
+					setDeviceMotionEventsEnabled(false);
+				}
+				else {
+					setDeviceMotionEventsEnabled(true);
+				}
+				break;
+			case TOGGLE_ORIENTATION:
+			  if (deviceOrientationEventsEnabled){
+			  	setDeviceOrientationEventsEnabled(false);
+			  }
+			  else {
+			  	setDeviceOrientationEventsEnabled(true);
+			  }
+			  break;
+		}
+	 } catch (Exception e) {
+	 	logger.log("{accelerometer} WARNING: Failure in consume request:", e);
+		e.printStackTrace();
+
+	 }
+	}
+
 
 	public void setInstallReferrer(String referrer) {
 	
@@ -370,5 +412,13 @@ public class AccelerometerPlugin implements IPlugin, SensorEventListener {
 	public void onBackPressed() {
 	
 	}
+	public enum RequestCommands {
 
+    ENABLE_MOTION,
+    DISABLE_MOTION,
+    ENABLE_ORIENTATION,
+    DISABLE_ORIENTATION,
+    TOGGLE_MOTION,
+    TOGGLE_ORIENTATION
+  }
 }
